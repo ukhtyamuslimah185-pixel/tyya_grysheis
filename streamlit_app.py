@@ -1,24 +1,24 @@
 import streamlit as st
 
 # ==========================
-# LINKED LIST PERPUSTAKAAN
+# LINKED LIST
 # ==========================
 
 class Node:
-    def __init__(self, judul, penulis, tahun):
+    def __init__(self, id_buku, judul, pengarang):
+        self.id_buku = id_buku
         self.judul = judul
-        self.penulis = penulis
-        self.tahun = tahun
+        self.pengarang = pengarang
         self.next = None
 
 
-class LinkedList:
+class LinkedListPerpustakaan:
     def __init__(self):
         self.head = None
 
-    # Tambah Buku
-    def tambah_buku(self, judul, penulis, tahun):
-        buku_baru = Node(judul, penulis, tahun)
+    # Tambah buku di akhir
+    def tambah_buku(self, id_buku, judul, pengarang):
+        buku_baru = Node(id_buku, judul, pengarang)
 
         if self.head is None:
             self.head = buku_baru
@@ -28,102 +28,166 @@ class LinkedList:
                 current = current.next
             current.next = buku_baru
 
-        print("Buku berhasil ditambahkan!")
+        return f"Buku '{judul}' berhasil ditambahkan."
 
-    # Tampilkan Buku
+    # Tampilkan semua buku
     def tampilkan_buku(self):
-        if self.head is None:
-            print("\nPerpustakaan kosong.")
-            return
+        hasil = []
 
-        current = self.head
-        nomor = 1
-
-        print("\n=== DAFTAR BUKU ===")
-        while current:
-            print(f"{nomor}. {current.judul}")
-            print(f"   Penulis : {current.penulis}")
-            print(f"   Tahun   : {current.tahun}")
-            print("-" * 25)
-
-            current = current.next
-            nomor += 1
-
-    # Cari Buku
-    def cari_buku(self, judul):
         current = self.head
 
         while current:
-            if current.judul.lower() == judul.lower():
-                print("\nBuku ditemukan!")
-                print("Judul   :", current.judul)
-                print("Penulis :", current.penulis)
-                print("Tahun   :", current.tahun)
-                return
+            hasil.append(
+                f"ID: {current.id_buku} | "
+                f"Judul: {current.judul} | "
+                f"Pengarang: {current.pengarang}"
+            )
+            current = current.next
+
+        return hasil
+
+    # Cari buku
+    def cari_buku(self, id_buku):
+        current = self.head
+
+        while current:
+            if current.id_buku == id_buku:
+                return (
+                    f"ID        : {current.id_buku}\n"
+                    f"Judul     : {current.judul}\n"
+                    f"Pengarang : {current.pengarang}"
+                )
 
             current = current.next
 
-        print("Buku tidak ditemukan.")
+        return "Buku tidak ditemukan."
 
-    # Hapus Buku
-    def hapus_buku(self, judul):
+    # Hapus buku
+    def hapus_buku(self, id_buku):
         current = self.head
         prev = None
 
         while current:
-            if current.judul.lower() == judul.lower():
+            if current.id_buku == id_buku:
 
                 if prev is None:
                     self.head = current.next
                 else:
                     prev.next = current.next
 
-                print("Buku berhasil dihapus!")
-                return
+                return f"Buku ID {id_buku} berhasil dihapus."
 
             prev = current
             current = current.next
 
-        print("Buku tidak ditemukan.")
+        return "Buku tidak ditemukan."
 
 
 # ==========================
-# PROGRAM UTAMA
+# SESSION STATE
 # ==========================
 
-perpustakaan = LinkedList()
+if "perpustakaan" not in st.session_state:
+    st.session_state.perpustakaan = LinkedListPerpustakaan()
 
-while True:
-    print("\n===== PERPUSTAKAAN =====")
-    print("1. Tambah Buku")
-    print("2. Tampilkan Buku")
-    print("3. Cari Buku")
-    print("4. Hapus Buku")
-    print("5. Keluar")
+perpustakaan = st.session_state.perpustakaan
 
-    pilihan = input("Pilih menu: ")
+# ==========================
+# TAMPILAN MENU
+# ==========================
 
-    if pilihan == "1":
-        judul = input("Judul Buku   : ")
-        penulis = input("Nama Penulis : ")
-        tahun = input("Tahun Terbit : ")
+st.title("📚 SISTEM PERPUSTAKAAN")
 
-        perpustakaan.tambah_buku(judul, penulis, tahun)
+st.markdown("""
+### MENU
+1. Tambah Buku  
+2. Tampilkan Buku  
+3. Cari Buku  
+4. Hapus Buku  
+5. Keluar
+""")
 
-    elif pilihan == "2":
-        perpustakaan.tampilkan_buku()
+pilihan = st.selectbox(
+    "Pilih Menu",
+    [
+        "1. Tambah Buku",
+        "2. Tampilkan Buku",
+        "3. Cari Buku",
+        "4. Hapus Buku",
+        "5. Keluar"
+    ]
+)
 
-    elif pilihan == "3":
-        judul = input("Masukkan judul buku: ")
-        perpustakaan.cari_buku(judul)
+# ==========================
+# MENU 1
+# ==========================
 
-    elif pilihan == "4":
-        judul = input("Masukkan judul buku yang akan dihapus: ")
-        perpustakaan.hapus_buku(judul)
+if pilihan == "1. Tambah Buku":
 
-    elif pilihan == "5":
-        print("Program selesai.")
-        break
+    st.subheader("Tambah Buku")
 
+    id_buku = st.text_input("ID Buku")
+    judul = st.text_input("Judul Buku")
+    pengarang = st.text_input("Nama Pengarang")
+
+    if st.button("Tambah"):
+        pesan = perpustakaan.tambah_buku(
+            id_buku,
+            judul,
+            pengarang
+        )
+        st.success(pesan)
+
+# ==========================
+# MENU 2
+# ==========================
+
+elif pilihan == "2. Tampilkan Buku":
+
+    st.subheader("Daftar Buku")
+
+    data = perpustakaan.tampilkan_buku()
+
+    if len(data) == 0:
+        st.warning("Perpustakaan kosong.")
     else:
-        print("Pilihan tidak valid!")
+        for buku in data:
+            st.write(buku)
+
+# ==========================
+# MENU 3
+# ==========================
+
+elif pilihan == "3. Cari Buku":
+
+    st.subheader("Cari Buku")
+
+    id_buku = st.text_input("Masukkan ID Buku")
+
+    if st.button("Cari"):
+        hasil = perpustakaan.cari_buku(id_buku)
+        st.text(hasil)
+
+# ==========================
+# MENU 4
+# ==========================
+
+elif pilihan == "4. Hapus Buku":
+
+    st.subheader("Hapus Buku")
+
+    id_buku = st.text_input(
+        "Masukkan ID Buku yang akan dihapus"
+    )
+
+    if st.button("Hapus"):
+        hasil = perpustakaan.hapus_buku(id_buku)
+        st.info(hasil)
+
+# ==========================
+# MENU 5
+# ==========================
+
+elif pilihan == "5. Keluar":
+
+    st.success("Program selesai.")
